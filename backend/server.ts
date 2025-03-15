@@ -16,7 +16,7 @@ app.use(cors({
     'https://life-expectancy-theta.vercel.app',
     'https://life-expectancy-git-main-nishan-dhaliwals-projects.vercel.app'
   ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true
 }));
 

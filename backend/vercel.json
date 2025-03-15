@@ -4,19 +4,16 @@
     {
       "src": "backend/server.ts",
       "use": "@vercel/node"
-    },
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/server.ts"
+      "dest": "/backend/server.ts",
+      "headers": {
+        "Access-Control-Allow-Origin": "https://life-expectancy-theta.vercel.app",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS"
+      }
     },
     {
       "src": "/(.*)",
