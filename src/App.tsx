@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
@@ -7,22 +8,22 @@ import SignupPage from './pages/SignupPage';
 import Dashboard from './pages/Dashboard';
 import './styles/global.css';
 
-// Protected route component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { isAuthenticated, loading } = useAuth();
   
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="loading">Loading...</div>;
   
-  if (!isAuthenticated) {
-    return <Navigate to="/" />;
-  }
-  
-  return children;
+  return isAuthenticated ? children : <Navigate to="/" replace />;
 };
 
-function AppRoutes() {
+const AppRoutes = () => {
   return (
-    <Router>
+    <Router
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+      }}
+    >
       <div className="app-container">
         <Navbar />
         <main className="main-content">
@@ -43,14 +44,12 @@ function AppRoutes() {
       </div>
     </Router>
   );
-}
+};
 
-function App() {
+export default function App() {
   return (
     <AuthProvider>
       <AppRoutes />
     </AuthProvider>
   );
 }
-
-export default App;
