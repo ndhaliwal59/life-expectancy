@@ -4,29 +4,30 @@ import dotenv from 'dotenv';
 import connectDB from './config/db';
 import authRoutes from './routes/auth';
 
-// Load environment variables
 dotenv.config();
-
-// Connect to MongoDB
 connectDB();
 
-// Initialize Express
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 
-// Middleware
-app.use(cors());
+// CORS Configuration
+app.use(cors({
+  origin: [
+    'https://life-expectancy-theta.vercel.app',
+    'https://life-expectancy-git-main-nishan-dhaliwals-projects.vercel.app'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
+
 app.use(express.json());
-
-// Routes
 app.use('/api/auth', authRoutes);
 
-// Basic route
 app.get('/', (req, res) => {
-  res.send('Life Expectancy Calculator API is running');
+  res.send('Life Expectancy Calculator API');
 });
 
-// Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

@@ -1,41 +1,79 @@
-import axios from 'axios';
+// authService.ts
+const API_URL = import.meta.env.VITE_API_URL || '/api/auth';
 
-const API_URL = 'http://localhost:5000/api/auth';
+interface UserData {
+  email: string;
+  password: string;
+}
 
-// Register user
-export const register = async (userData: { name: string; email: string; password: string }) => {
-  const response = await axios.post(`${API_URL}/register`, userData);
-  if (response.data.token) {
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('user', JSON.stringify(response.data.user));
+interface AuthResponse {
+  token?: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  message?: string;
+}
+
+// Login user with better error handling
+export const login = async (userData: UserData): Promise<AuthResponse> => {
+  try {
+    const response = await fetch(`${API_URL}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Required for cookies if using HTTP-only tokens
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Login failed');
+    }
+
+    const data: AuthResponse = await response.json();
+    
+    if (data.token && data.user) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Login error:', error);
+    throw error;
   }
-  return response.data;
 };
 
-// Login user
-export const login = async (userData: { email: string; password: string }) => {
-  const response = await axios.post(`${API_URL}/login`, userData);
-  if (response.data.token) {
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('user', JSON.stringify(response.data.user));
-  }
-  return response.data;
-};
-
-// Logout user
-export const logout = () => {
+// Enhanced logout with cleanup
+export const logout = (): void => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
+  // Add any additional cleanup for cookies or session storage if needed
 };
 
-// Get current user
-export const getCurrentUser = () => {
+// Type-safe current user retrieval
+export const getCurrentUser = (): { id: string; name: string; email: string } | null => {
   const userStr = localStorage.getItem('user');
-  if (userStr) return JSON.parse(userStr);
-  return null;
+  if (!userStr) return null;
+
+  try {
+    const user = JSON.parse(userStr);
+    if (user?.id && user?.email) {
+      return user;
+    }
+    return null;
+  } catch (error) {
+    console.error('Error parsing user data:', error);
+    return null;
+  }
 };
 
-// Check if user is authenticated
-export const isAuthenticated = () => {
-  return localStorage.getItem('token') !== null;
+// Robust authentication check
+export const isAuthenticated = (): boolean => {
+  const token = localStorage.getItem('token');
+  const user = getCurrentUser();
+  return !!token && !!user;
 };
